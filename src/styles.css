@@ -61,11 +61,17 @@ h2 { font: 600 17px Manrope,sans-serif; margin: 0; letter-spacing: -.02em; }
 .satellite-info dl div { display: flex; justify-content: space-between; gap: 12px; font-size: 12px; }
 .satellite-info dt { color: #91a1af; }
 .satellite-info dd { margin: 0; color: #e4edf4; font-family: 'DM Mono',monospace; }
+.satcat-details { margin-top: 13px; padding-top: 11px; border-top: 1px solid rgba(161,190,214,.13); }
+.satcat-details h3 { margin: 0 0 9px; color: #b5c7d5; font: 600 11px Manrope,sans-serif; }
+.satcat-details dl { margin-top: 8px; }
+.satcat-details dl div { font-size: 11px; }
+.satcat-details dd { max-width: 60%; overflow-wrap: anywhere; text-align: right; }
+.satcat-message { margin: 7px 0; color: #9babb9; font-size: 11px; line-height: 1.45; }
 .app-footer { display: flex; justify-content: space-between; margin-top: auto; padding-top: 22px; color: #728394; font-size: 8px; }
 .app-footer i { color: #56d9fa; font-style: normal; }
 @media (max-width: 700px) {
   .overlay { padding: 14px; }
   .control-card, .counter-card { width: 250px; }
   .group-row { min-height: 40px; }
-  .satellite-info { top: auto; right: 14px; bottom: 14px; width: min(250px, calc(100vw - 28px)); }
+  .satellite-info { top: auto; right: 14px; bottom: 14px; width: min(300px, calc(100vw - 28px)); max-height: 56vh; overflow-y: auto; }
 }

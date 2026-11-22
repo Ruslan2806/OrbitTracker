@@ -5,6 +5,7 @@ import { getGroup } from './groups';
 import type { TleRecord } from './useTleGroup';
 
 export interface SatellitePosition {
+  noradId: string;
   lat: number;
   lng: number;
   alt: number;
@@ -29,6 +30,7 @@ export function useSatellitePositions(groups: { id: GroupId; records: TleRecord[
           if (!position || typeof position === 'boolean') continue;
           const geodetic = satellite.eciToGeodetic(position, satellite.gstime(now));
           next.push({
+            noradId: record.line1.slice(2, 7).trim(),
             lat: satellite.degreesLat(geodetic.latitude),
             lng: satellite.degreesLong(geodetic.longitude),
             alt: geodetic.height,
