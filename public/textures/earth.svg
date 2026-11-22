@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2048 1024">
+  <defs>
+    <linearGradient id="ocean" x2="0" y2="1"><stop stop-color="#124769"/><stop offset=".48" stop-color="#17678a"/><stop offset="1" stop-color="#0e3d5f"/></linearGradient>
+    <radialGradient id="glow"><stop stop-color="#55b7d4" stop-opacity=".32"/><stop offset="1" stop-color="#1b789b" stop-opacity="0"/></radialGradient>
+    <pattern id="grid" width="80" height="80" patternUnits="userSpaceOnUse"><path d="M0 0H80V80" fill="none" stroke="#96d9ed" stroke-opacity=".09" stroke-width="1"/></pattern>
+  </defs>
+  <rect width="2048" height="1024" fill="url(#ocean)"/><rect width="2048" height="1024" fill="url(#glow)"/><rect width="2048" height="1024" fill="url(#grid)"/>
+  <g fill="#74a987" stroke="#a6c9a5" stroke-width="5" stroke-linejoin="round" opacity=".96">
+    <path d="m180 180 48-42 75 10 36 40-21 35-47 7-25 42-44 13-18 56-39 17-31-33 10-56-25-32 17-39 36-18zM276 373l51 18 29 51-14 61 22 64-29 80-12 76-41 58-26-42 9-65-30-45 8-74-26-51 20-55zM420 224l35-35 48 9 34 39-12 34-44 14-21 35-46-15-24-38z"/>
+    <path d="m572 218 74-41 105 8 48 34 87-13 57 33 110-15 68 31 109-17 83 39 31 48-56 28-67-15-55 26-69-4-41 32-63-12-47 28-63-11-20 39-62-9-38 33-47-15-6-46-51-19-21-43-68-12-46-40-80 4-31-43zM632 344l48-10 49 26-7 57-37 39 11 54-34 61-38 18-31-44 15-69-27-53z"/>
+    <path d="m1213 337 45-32 53 18 39 53-15 50-43 19-25 57-40 14-25-48 12-43-29-43zM1510 266l53-29 78 12 55 41-28 31-52-13-24 32-48-8-34 22-46-28 8-34zM1689 342l37-27 64 15 22 36-41 25-49-10-32 20-32-28zM1562 462l53-32 81 15 62 45-19 34-59-9-26 46-66-7-43 35-44-30 18-41-36-22zM1734 662l57-19 56 31 31 45-37 20-64-22-47 4-35-30z"/>
+    <path d="m1023 772 62-25 80 17 48 38-20 64-50 21-49-24-64 11-37-43z"/>
+  </g>
+  <path d="M0 512h2048M1024 0v1024" stroke="#d0f1fc" stroke-opacity=".16" fill="none" stroke-dasharray="8 9"/>
+</svg>
