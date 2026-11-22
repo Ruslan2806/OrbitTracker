@@ -39,7 +39,7 @@ export function UIOverlay({ selected, onToggle, states, visibleCount, hovered }:
           <div className="satcat-details">
             <h3>Доп. информация:</h3>
             {satcat.loading && <p className="satcat-message">Загрузка сведений…</p>}
-            {!satcat.loading && catalogRecord && <SatcatDetails record={catalogRecord} noradId={hovered.noradId} />}
+            {!satcat.loading && catalogRecord && <SatcatDetails record={catalogRecord} />}
             {!satcat.loading && !catalogRecord && <p className="satcat-message">Дополнительные сведения для этого спутника не найдены.</p>}
           </div>
         </aside>
@@ -78,7 +78,7 @@ export function UIOverlay({ selected, onToggle, states, visibleCount, hovered }:
   );
 }
 
-function SatcatDetails({ record, noradId }: { record: SatcatRecord; noradId: string }) {
+function SatcatDetails({ record }: { record: SatcatRecord }) {
   const status = statusLabels[record.status] ?? (record.status || 'Неизвестно');
   const type = typeLabels[record.type] ?? (record.type || 'Неизвестно');
 
