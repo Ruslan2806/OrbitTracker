@@ -59,7 +59,6 @@ const definitions: Array<[string, string, string, string?, 'SPECIAL'?]> = [
   ['education', 'Образовательные', 'Образовательные спутники'],
   ['military', 'Военные', 'Военные спутники'],
   ['radar', 'Калибровка радаров', 'Спутники калибровки радаров'],
-  ['misc', 'Прочие', 'Прочие спутники'],
   ['cubesat', 'CubeSats', 'Малые спутники формата CubeSat'],
 ];
 
