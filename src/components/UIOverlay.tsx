@@ -11,15 +11,16 @@ interface GroupState {
 interface Props {
   selected: Set<GroupId>;
   onToggle: (id: GroupId) => void;
+  onToggleAll: () => void;
   states: Record<GroupId, GroupState>;
   visibleCount: number;
   hovered: SatellitePosition | null;
 }
 
-export function UIOverlay({ selected, onToggle, states, visibleCount, hovered }: Props) {
+export function UIOverlay({ selected, onToggle, onToggleAll, states, visibleCount, hovered }: Props) {
   const errors = [...selected].map((id) => states[id].error).filter(Boolean);
-  const satcat = useSatcatData();
-  const catalogRecord = hovered ? satcat.records[hovered.noradId] : undefined;
+  const satcat = useSatcatData(hovered?.noradId ?? null);
+  const catalogRecord = satcat.record;
 
   return (
     <main className="overlay">
@@ -49,6 +50,13 @@ export function UIOverlay({ selected, onToggle, states, visibleCount, hovered }:
           <h2>Слои карты</h2>
           <span className="group-count">{selected.size} / {GROUPS.length}</span>
         </div>
+        <label className="all-groups-toggle">
+          <input type="checkbox" checked={selected.size === GROUPS.length} onChange={onToggleAll} />
+          <span className="custom-check all-groups-check" aria-hidden="true">
+            {selected.size === GROUPS.length && <svg viewBox="0 0 14 14"><path d="m2.5 7 3 3 6-6" /></svg>}
+          </span>
+          <strong>Все спутники</strong>
+        </label>
         <div className="group-list">
           {GROUPS.map((group) => {
             const isSelected = selected.has(group.id);

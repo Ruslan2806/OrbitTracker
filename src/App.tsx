@@ -4,23 +4,19 @@ import { UIOverlay } from './components/UIOverlay';
 import { useSatellitePositions } from './hooks/useSatellitePositions';
 import type { SatellitePosition } from './hooks/useSatellitePositions';
 import { GROUPS, type GroupId } from './hooks/groups';
-import { useTleGroup } from './hooks/useTleGroup';
+import { useOrbitalGroups } from './hooks/useOrbitalGroups';
 import './styles.css';
 
 export default function App() {
   const [selectedGroups, setSelectedGroups] = useState<Set<GroupId>>(() => new Set(['stations']));
   const [hovered, setHovered] = useState<SatellitePosition | null>(null);
-  const starlink = useTleGroup('starlink', selectedGroups.has('starlink'));
-  const stations = useTleGroup('stations', selectedGroups.has('stations'));
-  const gps = useTleGroup('gps', selectedGroups.has('gps'));
-  const weather = useTleGroup('weather', selectedGroups.has('weather'));
-  const hooks = { starlink, stations, gps, weather };
+  const groupStates = useOrbitalGroups(selectedGroups);
   const groups = useMemo(() => GROUPS
     .filter(({ id }) => selectedGroups.has(id))
-    .map(({ id }) => ({ id, records: hooks[id].records })),
-  [selectedGroups, starlink.records, stations.records, gps.records, weather.records]);
+    .map(({ id }) => ({ id, records: groupStates[id].records })),
+  [selectedGroups, groupStates]);
   const positionsRef = useSatellitePositions(groups);
-  const visibleCount = Math.min(groups.reduce((sum, group) => sum + group.records.length, 0), 1000);
+  const visibleCount = new Set(groups.flatMap(({ records }) => records.map((record) => String(record.NORAD_CAT_ID)))).size;
 
   const onToggle = useCallback((id: GroupId) => {
     setSelectedGroups((current) => {
@@ -31,18 +27,24 @@ export default function App() {
     });
   }, []);
 
+  const onToggleAll = useCallback(() => {
+    setSelectedGroups((current) => current.size === GROUPS.length
+      ? new Set()
+      : new Set(GROUPS.map(({ id }) => id)));
+  }, []);
+
   return (
     <div className="app-shell">
       <div className="scene"><GlobeScene positionsRef={positionsRef} onHover={setHovered} /></div>
       <UIOverlay
         selected={selectedGroups}
         onToggle={onToggle}
-        states={{
-          starlink: { loading: starlink.loading, error: starlink.error, count: starlink.records.length },
-          stations: { loading: stations.loading, error: stations.error, count: stations.records.length },
-          gps: { loading: gps.loading, error: gps.error, count: gps.records.length },
-          weather: { loading: weather.loading, error: weather.error, count: weather.records.length },
-        }}
+        onToggleAll={onToggleAll}
+        states={Object.fromEntries(GROUPS.map(({ id }) => [id, {
+          loading: groupStates[id].loading,
+          error: groupStates[id].error,
+          count: groupStates[id].records.length,
+        }]))}
         visibleCount={visibleCount}
         hovered={hovered}
       />

@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
-import { Color, InstancedMesh, Matrix4, Object3D } from 'three';
+import { Color, InstancedMesh, Object3D } from 'three';
 import { geodeticToVector } from '../utils/coords';
 import type { SatellitePosition } from '../hooks/useSatellitePositions';
+import { GROUPS } from '../hooks/groups';
 
-export const MAX_SATELLITES = 1000;
-const zeroMatrix = new Matrix4().makeScale(0, 0, 0);
+export const MAX_SATELLITES = GROUPS.reduce((total, group) => total + group.limit, 0);
 
 export function SatellitesLayer({
   positionsRef,
@@ -38,7 +38,7 @@ export function SatellitesLayer({
       mesh.setMatrixAt(index, dummy.matrix);
       mesh.setColorAt(index, new Color(satellite.color));
     }
-    for (let index = positions.length; index < MAX_SATELLITES; index += 1) mesh.setMatrixAt(index, zeroMatrix);
+    mesh.count = positions.length;
     mesh.instanceMatrix.needsUpdate = true;
     if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
     // Raycasting uses the InstancedMesh bounds; refresh them after satellites move,
