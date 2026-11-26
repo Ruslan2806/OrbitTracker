@@ -15,24 +15,6 @@ export interface SatcatRecord {
   perigee: number | string | null;
 }
 
-interface CachedRecord {
-  cachedAt: number;
-  record: SatcatRecord | null;
-}
-
-const CACHE_TTL = 24 * 60 * 60 * 1000;
-
-function readCachedRecord(id: string): CachedRecord | null {
-  try {
-    const value = localStorage.getItem(`satcat:${id}`);
-    if (!value) return null;
-    const cached = JSON.parse(value) as CachedRecord;
-    return typeof cached.cachedAt === 'number' ? cached : null;
-  } catch {
-    return null;
-  }
-}
-
 function toRecord(row: Record<string, string | number | null>): SatcatRecord {
   return {
     name: String(row.OBJECT_NAME ?? ''),
@@ -61,19 +43,12 @@ export function useSatcatData(noradId: string | null) {
       return;
     }
 
-    const cached = readCachedRecord(noradId);
-    if (cached && Date.now() - cached.cachedAt < CACHE_TTL) {
-      setSavedRecord({ noradId, record: cached.record });
-      setLoading(false);
-      return;
-    }
-
     const controller = new AbortController();
-    setSavedRecord({ noradId, record: cached?.record ?? null });
+    setSavedRecord({ noradId, record: null });
     setLoading(true);
     const params = new URLSearchParams({ CATNR: noradId, FORMAT: 'JSON' });
     const timer = window.setTimeout(() => {
-      fetch(`https://celestrak.org/satcat/records.php?${params}`, { signal: controller.signal })
+      fetch(`https://celestrak.org/satcat/records.php?${params}`, { signal: controller.signal, cache: 'no-store' })
         .then((response) => {
           if (!response.ok) throw new Error(`SATCAT: ${response.status}`);
           return response.json() as Promise<unknown>;
@@ -83,11 +58,8 @@ export function useSatcatData(noradId: string | null) {
           const row = Array.isArray(data) ? data[0] : null;
           const nextRecord = row && typeof row === 'object' ? toRecord(row as Record<string, string | number | null>) : null;
           setSavedRecord({ noradId, record: nextRecord });
-          try {
-            localStorage.setItem(`satcat:${noradId}`, JSON.stringify({ cachedAt: Date.now(), record: nextRecord } satisfies CachedRecord));
-          } catch { /* Browser storage is optional. */ }
         })
-        .catch(() => { /* Keep cached data when CelesTrak is unavailable. */ })
+        .catch(() => { /* Ignore aborted or failed requests. */ })
         .finally(() => { if (!controller.signal.aborted) setLoading(false); });
     }, 250);
 

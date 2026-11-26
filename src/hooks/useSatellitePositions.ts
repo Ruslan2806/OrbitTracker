@@ -14,15 +14,9 @@ export interface SatellitePosition {
   group: GroupId;
 }
 
-const satrecCache = new WeakMap<OrbitalRecord, ReturnType<typeof satellite.json2satrec>>();
-
 function getSatrec(record: OrbitalRecord) {
-  const cached = satrecCache.get(record);
-  if (cached) return cached;
   try {
-    const satrec = satellite.json2satrec(record);
-    satrecCache.set(record, satrec);
-    return satrec;
+    return satellite.json2satrec(record);
   } catch {
     return null;
   }

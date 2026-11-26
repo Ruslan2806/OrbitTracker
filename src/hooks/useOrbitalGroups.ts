@@ -4,25 +4,6 @@ import { GROUPS, type GroupId } from './groups';
 
 export type OrbitalRecord = OMMJsonObject;
 
-interface CacheEntry {
-  savedAt: number;
-  records: OrbitalRecord[];
-}
-
-const CACHE_TTL = 2 * 60 * 60 * 1000;
-
-function getCachedRecords(id: GroupId): OrbitalRecord[] | null {
-  try {
-    const raw = localStorage.getItem(`orbit:${id}`);
-    if (!raw) return null;
-    const entry = JSON.parse(raw) as CacheEntry;
-    if (Date.now() - entry.savedAt > CACHE_TTL || !Array.isArray(entry.records)) return null;
-    return entry.records;
-  } catch {
-    return null;
-  }
-}
-
 function parseCsv(text: string): OrbitalRecord[] {
   const rows: string[][] = [];
   let row: string[] = [];
@@ -72,10 +53,22 @@ const emptyStates = () => Object.fromEntries(GROUPS.map(({ id }) => [id, { recor
 export function useOrbitalGroups(enabledGroups: Set<GroupId>) {
   const [states, setStates] = useState<Record<GroupId, OrbitalGroupState>>(emptyStates);
   const inFlight = useRef(new Set<GroupId>());
+  const loaded = useRef(new Set<GroupId>());
+  const previousEnabled = useRef(new Set<GroupId>());
+  const enabledGroupsRef = useRef(enabledGroups);
+  enabledGroupsRef.current = enabledGroups;
 
   useEffect(() => {
     let disposed = false;
-    const pending = GROUPS.filter(({ id }) => enabledGroups.has(id));
+    for (const id of previousEnabled.current) {
+      if (!enabledGroups.has(id)) {
+        loaded.current.delete(id);
+        setStates((current) => ({ ...current, [id]: { records: [], loading: false, error: null } }));
+      }
+    }
+    previousEnabled.current = new Set(enabledGroups);
+
+    const pending = GROUPS.filter(({ id }) => enabledGroups.has(id) && !loaded.current.has(id));
     let nextIndex = 0;
 
     const loadNext = async () => {
@@ -83,26 +76,25 @@ export function useOrbitalGroups(enabledGroups: Set<GroupId>) {
         const group = pending[nextIndex++];
         if (!group) return;
 
-        const cached = getCachedRecords(group.id);
-        if (cached) {
-          setStates((current) => ({ ...current, [group.id]: { records: cached.slice(0, group.limit), loading: false, error: null } }));
-          continue;
-        }
         if (inFlight.current.has(group.id)) continue;
 
         inFlight.current.add(group.id);
         setStates((current) => ({ ...current, [group.id]: { records: [], loading: true, error: null } }));
         try {
           const params = new URLSearchParams({ [group.query ?? 'GROUP']: group.source, FORMAT: 'CSV' });
-          const response = await fetch(`https://celestrak.org/NORAD/elements/gp.php?${params}`);
+          const response = await fetch(`https://celestrak.org/NORAD/elements/gp.php?${params}`, { cache: 'no-store' });
           if (!response.ok) throw new Error(response.status === 403 ? 'CelesTrak временно отклонил запрос (403).' : `Ошибка загрузки: ${response.status}`);
           const records = parseCsv(await response.text()).slice(0, group.limit);
           if (!records.length) throw new Error('Источник не вернул орбитальные элементы.');
 
-          setStates((current) => ({ ...current, [group.id]: { records, loading: false, error: null } }));
-          try { localStorage.setItem(`orbit:${group.id}`, JSON.stringify({ savedAt: Date.now(), records } satisfies CacheEntry)); } catch { /* Browser storage is optional. */ }
+          if (enabledGroupsRef.current.has(group.id)) {
+            loaded.current.add(group.id);
+            setStates((current) => ({ ...current, [group.id]: { records, loading: false, error: null } }));
+          }
         } catch (reason: unknown) {
-          setStates((current) => ({ ...current, [group.id]: { records: [], loading: false, error: reason instanceof Error ? reason.message : 'Не удалось загрузить данные.' } }));
+          if (enabledGroupsRef.current.has(group.id)) {
+            setStates((current) => ({ ...current, [group.id]: { records: [], loading: false, error: reason instanceof Error ? reason.message : 'Не удалось загрузить данные.' } }));
+          }
         } finally {
           inFlight.current.delete(group.id);
         }
